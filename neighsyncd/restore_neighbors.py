@@ -53,7 +53,7 @@ def log_error(msg):
 # and this process is started by supervisord in swss docker.
 # There had been devices taking close to 70 seconds to complete restoration, setting
 # default timeout to 110 seconds.
-DEF_TIME_OUT = 110
+DEF_TIME_OUT = 600
 
 # every 5 seconds to check interfaces states
 CHECK_INTERVAL = 5
