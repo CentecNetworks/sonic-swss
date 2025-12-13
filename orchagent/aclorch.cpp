@@ -3270,6 +3270,10 @@ void AclOrch::initDefaultTableTypes(const string& platform, const string& sub_pl
             .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_L4_SRC_PORT))
             .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_L4_DST_PORT))
             .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_TCP_FLAGS))
+            .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_BTH_OPCODE))
+            .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_AETH_SYNDROME))
+            .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_IN_PORTS))
+            .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_ECN))
             .build()
     );
 
@@ -3287,6 +3291,8 @@ void AclOrch::initDefaultTableTypes(const string& platform, const string& sub_pl
             .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_L4_SRC_PORT))
             .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_L4_DST_PORT))
             .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_TCP_FLAGS))
+            .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_IN_PORTS))
+            .withMatch(make_shared<AclTableMatch>(SAI_ACL_TABLE_ATTR_FIELD_ECN))
             .build()
     );
 
