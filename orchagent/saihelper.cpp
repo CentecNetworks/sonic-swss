@@ -591,6 +591,7 @@ task_process_status handleSaiCreateStatus(sai_api_t api, sai_status_t status, vo
         case SAI_API_NEIGHBOR:
         case SAI_API_NEXT_HOP:
         case SAI_API_NEXT_HOP_GROUP:
+        case SAI_API_VIRTUAL_ROUTER:
             switch(status)
             {
                 case SAI_STATUS_SUCCESS:
