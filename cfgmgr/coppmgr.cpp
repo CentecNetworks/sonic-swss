@@ -521,7 +521,8 @@ void CoppMgr::addTrap(string trap_ids, string trap_group)
     getTrapGroupTrapIds(trap_group, trap_group_trap_ids);
     FieldValueTuple fv1(COPP_TRAP_ID_LIST_FIELD, trap_group_trap_ids);
     fvs.push_back(fv1);
-    if (!checkTrapGroupPending(trap_group))
+    if (!checkTrapGroupPending(trap_group)
+       && m_coppGroupFvs.find(trap_group) != m_coppGroupFvs.end())
     {
         m_appCoppTable.set(trap_group, fvs);
         setCoppGroupStateOk(trap_group);
