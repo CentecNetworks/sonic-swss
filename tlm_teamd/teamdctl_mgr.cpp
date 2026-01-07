@@ -182,6 +182,13 @@ void TeamdCtlMgr::process_add_queue()
 TeamdCtlDump TeamdCtlMgr::get_dump(const std::string & lag_name, bool to_retry)
 {
     TeamdCtlDump res = { false, "" };
+
+    if (m_handlers.find(lag_name) == m_handlers.end())
+    {
+        SWSS_LOG_DEBUG("The LAG '%s' has been removed.", lag_name.c_str());
+        return res;
+    }
+
     if (has_key(lag_name))
     {
         auto tdc = m_handlers[lag_name];
