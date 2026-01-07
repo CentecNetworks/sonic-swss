@@ -62,6 +62,7 @@ acl_rule_attr_lookup_t aclMatchLookup =
     { MATCH_TCP_FLAGS,         SAI_ACL_ENTRY_ATTR_FIELD_TCP_FLAGS },
     { MATCH_IP_TYPE,           SAI_ACL_ENTRY_ATTR_FIELD_ACL_IP_TYPE },
     { MATCH_DSCP,              SAI_ACL_ENTRY_ATTR_FIELD_DSCP },
+    { MATCH_ECN,               SAI_ACL_ENTRY_ATTR_FIELD_ECN },
     { MATCH_TC,                SAI_ACL_ENTRY_ATTR_FIELD_TC },
     { MATCH_ICMP_TYPE,         SAI_ACL_ENTRY_ATTR_FIELD_ICMP_TYPE },
     { MATCH_ICMP_CODE,         SAI_ACL_ENTRY_ATTR_FIELD_ICMP_CODE },
@@ -942,6 +943,11 @@ bool AclRule::validateAddMatch(string attr_name, string attr_value)
             {
                 matchData.mask.u8 = 0x3F;
             }
+        }
+        else if (attr_name == MATCH_ECN)
+        {
+            matchData.data.u8 = to_uint<uint8_t>(attr_value);
+            matchData.mask.u8 = 0x03;
         }
         else if (attr_name == MATCH_IP_PROTOCOL || attr_name == MATCH_NEXT_HEADER)
         {
