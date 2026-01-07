@@ -656,6 +656,14 @@ task_process_status handleSaiSetStatus(sai_api_t api, sai_status_t status, void 
                     SWSS_LOG_ERROR("Encountered SAI_STATUS_INVALID_ATTR_VALUE_0 in set operation, task failed, SAI API: %s, status: %s",
                             sai_serialize_api(api).c_str(), sai_serialize_status(status).c_str());
                     return task_failed;
+                case SAI_STATUS_NOT_SUPPORTED:
+                    /*
+                     * If user gives an invalid attribute value, no need to retry or exit orchagent, just fail the current task
+                     * and let user correct the configuration.
+                     */
+                    SWSS_LOG_WARN("Encountered SAI_STATUS_NOT_SUPPORTED in set operation, task failed, SAI API: %s, status: %s",
+                            sai_serialize_api(api).c_str(), sai_serialize_status(status).c_str());
+                    return task_failed;
                 default:
                     SWSS_LOG_ERROR("Encountered failure in set operation, exiting orchagent, SAI API: %s, status: %s",
                             sai_serialize_api(api).c_str(), sai_serialize_status(status).c_str());

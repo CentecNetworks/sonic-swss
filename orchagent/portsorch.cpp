@@ -2683,7 +2683,7 @@ void PortsOrch::initPortCapLinkTraining(Port &port)
     // TODO:
     // Add SAI_PORT_ATTR_SUPPORTED_LINK_TRAINING_MODE query when it is
     // available in the saiport.h of SAI.
-    port.m_cap_lt = 1;
+    port.m_cap_lt = 0;
     SWSS_LOG_WARN("Unable to get %s LT support capability", port.m_alias.c_str());
 }
 
