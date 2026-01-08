@@ -2683,8 +2683,16 @@ void PortsOrch::initPortCapLinkTraining(Port &port)
     // TODO:
     // Add SAI_PORT_ATTR_SUPPORTED_LINK_TRAINING_MODE query when it is
     // available in the saiport.h of SAI.
-    port.m_cap_lt = 0;
-    SWSS_LOG_WARN("Unable to get %s LT support capability", port.m_alias.c_str());
+    string platform = getenv("platform") ? getenv("platform") : "";
+    if (platform == CTC_PLATFORM_SUBSTRING)
+    {
+        port.m_cap_lt = 0;
+        SWSS_LOG_WARN("Unable to get %s LT support capability", port.m_alias.c_str());
+    }
+    else
+    {
+        port.m_cap_lt = 1;
+    }
 }
 
 bool PortsOrch::isFecModeSupported(const Port &port, sai_port_fec_mode_t fec_mode)
