@@ -182,13 +182,6 @@ void TeamdCtlMgr::process_add_queue()
 TeamdCtlDump TeamdCtlMgr::get_dump(const std::string & lag_name, bool to_retry)
 {
     TeamdCtlDump res = { false, "" };
-
-    if (m_handlers.find(lag_name) == m_handlers.end())
-    {
-        SWSS_LOG_DEBUG("The LAG '%s' has been removed.", lag_name.c_str());
-        return res;
-    }
-
     if (has_key(lag_name))
     {
         auto tdc = m_handlers[lag_name];
@@ -214,7 +207,7 @@ TeamdCtlDump TeamdCtlMgr::get_dump(const std::string & lag_name, bool to_retry)
                 {
                     if (m_lags_err_retry[lag_name] == MAX_RETRY)
                     {
-                        SWSS_LOG_ERROR("Can't get dump for LAG '%s'. Skipping", lag_name.c_str());
+                        SWSS_LOG_DEBUG("Can't get dump for LAG '%s'. Skipping", lag_name.c_str());
                         m_lags_err_retry.erase(lag_name);
                     }
                     else
@@ -230,7 +223,7 @@ TeamdCtlDump TeamdCtlMgr::get_dump(const std::string & lag_name, bool to_retry)
             else
             {
                 // No need to retry if the flag is not set.
-                SWSS_LOG_ERROR("Can't get dump for LAG '%s'. Skipping", lag_name.c_str());
+                SWSS_LOG_DEBUG("Can't get dump for LAG '%s'. Skipping", lag_name.c_str());
             }
         }
     }
