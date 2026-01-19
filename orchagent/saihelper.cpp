@@ -555,6 +555,8 @@ task_process_status handleSaiCreateStatus(sai_api_t api, sai_status_t status, vo
                 case SAI_STATUS_SUCCESS:
                     return task_success;
                 case SAI_STATUS_FAILURE:
+                case SAI_STATUS_INVALID_PARAMETER:
+                case SAI_STATUS_ITEM_ALREADY_EXISTS:
                     /*
                      * Host interface maybe failed due to lane not available.
                      * In some scenarios, like SONiC virtual machine, the invalid lane may be not enabled by VM configuration,
