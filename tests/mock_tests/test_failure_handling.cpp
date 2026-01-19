@@ -62,9 +62,12 @@ namespace saifailure_test
         ASSERT_EQ(*_sai_syncd_notifications_count, ++notif_count);
         ASSERT_EQ(*_sai_syncd_notification_event, SAI_REDIS_NOTIFY_SYNCD_INVOKE_DUMP);
 
+	/* removed by yoush for copp trap action configuring error ignore in 20260119 */
+#if 0
         ASSERT_DEATH({handleSaiCreateStatus(SAI_API_HOSTIF, SAI_STATUS_INVALID_PARAMETER);}, "");
         ASSERT_EQ(*_sai_syncd_notifications_count, ++notif_count);
         ASSERT_EQ(*_sai_syncd_notification_event, SAI_REDIS_NOTIFY_SYNCD_INVOKE_DUMP);
+#endif
 
         ASSERT_DEATH({handleSaiCreateStatus(SAI_API_PORT, SAI_STATUS_FAILURE);}, "");
         ASSERT_EQ(*_sai_syncd_notifications_count, ++notif_count);
