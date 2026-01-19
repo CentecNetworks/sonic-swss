@@ -7012,11 +7012,14 @@ bool PortsOrch::addLagMember(Port &lag, Port &port, string member_status)
     SWSS_LOG_ENTER();
     bool enableForwarding = (member_status == "enabled");
 
+    /* System Modify by yoush, remove member port pvid process because of sai would do it */
+#if 0
     sai_uint32_t pvid;
     if (getPortPvid(lag, pvid))
     {
         setPortPvid (port, pvid);
     }
+#endif
 
     sai_attribute_t attr;
     vector<sai_attribute_t> attrs;
