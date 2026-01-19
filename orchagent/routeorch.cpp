@@ -1965,12 +1965,13 @@ bool RouteOrch::addRoute(RouteBulkContext& ctx, const NextHopGroupKey &nextHops)
     }
 
     /* add by yoush for ip2me route, add db for route check in 2026-01-17*/
-    if (m_intfsOrch->m_ip2MeRouteTable.find(ipPrefix.to_string().c_str()) != m_intfsOrch->m_ip2MeRouteTable.end())
+    if (m_intfsOrch->checkIp2MeRouteExsit(vrf_id, ipPrefix))
     {
         SWSS_LOG_WARN("Failed to create route %s with next hop(s) %s: conflict with ip2me route",
                        ipPrefix.to_string().c_str(), nextHops.to_string().c_str());
         return false;
     }
+    /* end by yoush */
 
     /* Sync the route entry */
     sai_route_entry_t route_entry;
