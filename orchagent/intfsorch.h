@@ -107,6 +107,8 @@ private:
     unique_ptr<Table> m_tableVoqSystemInterfaceTable;
     void voqSyncAddIntf(string &alias);
     void voqSyncDelIntf(string &alias);
+    /* add by yoush for remoted route conflict with ip2me route in 2026-01-17*/
+    std::set<std::string> m_ip2MeRouteTable;
 
 };
 

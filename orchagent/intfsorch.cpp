@@ -1392,7 +1392,14 @@ void IntfsOrch::addIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_prefix)
         }
     }
 
-    SWSS_LOG_NOTICE("Create IP2me route ip:%s", ip_prefix.getIp().to_string().c_str());
+    /* add by yoush for ip2me route, add db for route check in 2026-01-17*/
+    if (m_ip2MeRouteTable.find(ip_prefix.getIp().to_string().c_str()) == m_ip2MeRouteTable.end()
+        && status == SAI_STATUS_SUCCESS)
+    {
+        SWSS_LOG_NOTICE("Create IP2me route ip:%s", ip_prefix.getIp().to_string().c_str());
+        m_ip2MeRouteTable.insert(ip_prefix.getIp().to_string().c_str());
+    }
+    /* end by yoush */
 
     if (unicast_route_entry.destination.addr_family == SAI_IP_ADDR_FAMILY_IPV4)
     {
@@ -1413,17 +1420,23 @@ void IntfsOrch::removeIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_pref
     unicast_route_entry.vr_id = vrf_id;
     copy(unicast_route_entry.destination, ip_prefix.getIp());
 
-    sai_status_t status = sai_route_api->remove_route_entry(&unicast_route_entry);
-    if (status != SAI_STATUS_SUCCESS)
+    /* add by yoush for ip2me route, add db for route check in 2026-01-17*/
+    if (m_ip2MeRouteTable.find(ip_prefix.getIp().to_string().c_str()) != m_ip2MeRouteTable.end())
     {
-        SWSS_LOG_ERROR("Failed to remove IP2me route ip:%s, rv:%d", ip_prefix.getIp().to_string().c_str(), status);
-        if (handleSaiRemoveStatus(SAI_API_ROUTE, status) != task_success)
+        sai_status_t status = sai_route_api->remove_route_entry(&unicast_route_entry);
+        if (status != SAI_STATUS_SUCCESS)
         {
-            throw runtime_error("Failed to remove IP2me route.");
+            SWSS_LOG_ERROR("Failed to remove IP2me route ip:%s, rv:%d", ip_prefix.getIp().to_string().c_str(), status);
+            if (handleSaiRemoveStatus(SAI_API_ROUTE, status) != task_success)
+            {
+                throw runtime_error("Failed to remove IP2me route.");
+            }
         }
-    }
 
-    SWSS_LOG_NOTICE("Remove packet action trap route ip:%s", ip_prefix.getIp().to_string().c_str());
+        SWSS_LOG_NOTICE("Remove packet action trap route ip:%s", ip_prefix.getIp().to_string().c_str());
+        m_ip2MeRouteTable.erase(ip_prefix.getIp().to_string().c_str());
+    }
+    /* end by yoush */
 
     if (unicast_route_entry.destination.addr_family == SAI_IP_ADDR_FAMILY_IPV4)
     {
