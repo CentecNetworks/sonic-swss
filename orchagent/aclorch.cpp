@@ -1196,7 +1196,10 @@ bool AclRule::createRule()
         }
         SWSS_LOG_ERROR("Failed to create ACL rule %s, rv:%d",
                 m_id.c_str(), status);
-        AclRange::remove(range_objects, range_object_list.count);
+        if (!m_rangeConfig.empty())
+        {
+            AclRange::remove(range_objects, range_object_list.count);
+        }
         decreaseNextHopRefCount();
     }
 
