@@ -29,7 +29,7 @@ struct IntfsEntry
 };
 
 typedef map<string, IntfsEntry> IntfsTable;
-typedef std::map<sai_object_id_t, std::set<IpPrefix>> Ip2MeRouteTables;
+typedef std::map<sai_object_id_t, std::set<IpAddress>> Ip2MeRouteTables;
 
 class IntfsOrch : public Orch
 {

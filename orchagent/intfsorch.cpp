@@ -1396,21 +1396,21 @@ void IntfsOrch::addIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_prefix)
     auto it = m_ip2MeRouteTables.find(vrf_id);
     if (it != m_ip2MeRouteTables.end())
     {
-        if (it->second.find(ip_prefix) == it->second.end()
+        if (it->second.find(ip_prefix.getIp()) == it->second.end()
             && SAI_STATUS_SUCCESS == status)
         {
             SWSS_LOG_NOTICE("Add IP2me route ip:%s", ip_prefix.getIp().to_string().c_str());
-            it->second.insert(ip_prefix);
+            it->second.insert(ip_prefix.getIp());
         }
     }
     else
     {
         if (SAI_STATUS_SUCCESS == status)
         {
-            set<IpPrefix> ip2MeRoutes;
+            set<IpAddress> ip2MeRoutes;
 
             SWSS_LOG_NOTICE("Create IP2me route ip:%s", ip_prefix.getIp().to_string().c_str());
-            ip2MeRoutes.insert(ip_prefix);
+            ip2MeRoutes.insert(ip_prefix.getIp());
             m_ip2MeRouteTables.insert(make_pair(vrf_id, ip2MeRoutes));
         }
     }
@@ -1438,7 +1438,7 @@ void IntfsOrch::removeIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_pref
     /* add by yoush for ip2me route, add db for route check in 2026-01-17*/
     auto it = m_ip2MeRouteTables.find(vrf_id);
     if (it != m_ip2MeRouteTables.end()
-        && it->second.find(ip_prefix) != it->second.end())
+        && it->second.find(ip_prefix.getIp()) != it->second.end())
     {
         sai_status_t status = sai_route_api->remove_route_entry(&unicast_route_entry);
         if (status != SAI_STATUS_SUCCESS)
@@ -1449,8 +1449,9 @@ void IntfsOrch::removeIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_pref
                 throw runtime_error("Failed to remove IP2me route.");
             }
         }
+
         SWSS_LOG_NOTICE("Remove packet action trap route ip:%s", ip_prefix.getIp().to_string().c_str());
-        it->second.erase(ip_prefix);
+        it->second.erase(ip_prefix.getIp());
         if (it->second.empty())
         {
             m_ip2MeRouteTables.erase(vrf_id);
@@ -1476,7 +1477,8 @@ bool IntfsOrch::checkIp2MeRouteExsit(sai_object_id_t vrf_id, const IpPrefix &ip_
     auto it = m_ip2MeRouteTables.find(vrf_id);
 
     if (it != m_ip2MeRouteTables.end()
-        && it->second.find(ip_prefix) != it->second.end())
+        && ip_prefix.isFullMask()
+        && it->second.find(ip_prefix.getIp()) != it->second.end())
     {
         return true;
     }
