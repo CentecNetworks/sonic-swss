@@ -633,6 +633,7 @@ task_process_status handleSaiSetStatus(sai_api_t api, sai_status_t status, void 
         case SAI_STATUS_ITEM_ALREADY_EXISTS:
         case SAI_STATUS_ITEM_NOT_FOUND:
         case SAI_STATUS_ADDR_NOT_FOUND:
+        case SAI_STATUS_NOT_SUPPORTED:
             /* There are specific cases especially with dual-TORs where tunnel
              * routes and non-tunnel routes could be create for the same prefix
              * which can potentially lead to conditions where ITEM_NOT_FOUND can
