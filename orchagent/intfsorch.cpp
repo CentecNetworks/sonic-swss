@@ -1419,7 +1419,29 @@ void IntfsOrch::addIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_prefix)
         }
     }
 
-    SWSS_LOG_NOTICE("Create IP2me route ip:%s", ip_prefix.getIp().to_string().c_str());
+    /* add by yoush for ip2me route, add db for route check in 2026-01-17*/
+    auto it = m_ip2MeRouteTables.find(vrf_id);
+    if (it != m_ip2MeRouteTables.end())
+    {
+        if (it->second.find(ip_prefix.getIp()) == it->second.end()
+            && SAI_STATUS_SUCCESS == status)
+        {
+            SWSS_LOG_NOTICE("Add IP2me route ip:%s", ip_prefix.getIp().to_string().c_str());
+            it->second.insert(ip_prefix.getIp());
+        }
+    }
+    else
+    {
+        if (SAI_STATUS_SUCCESS == status)
+        {
+            set<IpAddress> ip2MeRoutes;
+
+            SWSS_LOG_NOTICE("Create IP2me route ip:%s", ip_prefix.getIp().to_string().c_str());
+            ip2MeRoutes.insert(ip_prefix.getIp());
+            m_ip2MeRouteTables.insert(make_pair(vrf_id, ip2MeRoutes));
+        }
+    }
+    /* end by yoush */
 
     if (unicast_route_entry.destination.addr_family == SAI_IP_ADDR_FAMILY_IPV4)
     {
@@ -1440,17 +1462,29 @@ void IntfsOrch::removeIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_pref
     unicast_route_entry.vr_id = vrf_id;
     copy(unicast_route_entry.destination, ip_prefix.getIp());
 
-    sai_status_t status = sai_route_api->remove_route_entry(&unicast_route_entry);
-    if (status != SAI_STATUS_SUCCESS)
+    /* add by yoush for ip2me route, add db for route check in 2026-01-17*/
+    auto it = m_ip2MeRouteTables.find(vrf_id);
+    if (it != m_ip2MeRouteTables.end()
+        && it->second.find(ip_prefix.getIp()) != it->second.end())
     {
-        SWSS_LOG_ERROR("Failed to remove IP2me route ip:%s, rv:%d", ip_prefix.getIp().to_string().c_str(), status);
-        if (handleSaiRemoveStatus(SAI_API_ROUTE, status) != task_success)
+        sai_status_t status = sai_route_api->remove_route_entry(&unicast_route_entry);
+        if (status != SAI_STATUS_SUCCESS)
         {
-            throw runtime_error("Failed to remove IP2me route.");
+            SWSS_LOG_ERROR("Failed to remove IP2me route ip:%s, rv:%d", ip_prefix.getIp().to_string().c_str(), status);
+            if (handleSaiRemoveStatus(SAI_API_ROUTE, status) != task_success)
+            {
+                throw runtime_error("Failed to remove IP2me route.");
+            }
+        }
+
+        SWSS_LOG_NOTICE("Remove packet action trap route ip:%s", ip_prefix.getIp().to_string().c_str());
+        it->second.erase(ip_prefix.getIp());
+        if (it->second.empty())
+        {
+            m_ip2MeRouteTables.erase(vrf_id);
         }
     }
-
-    SWSS_LOG_NOTICE("Remove packet action trap route ip:%s", ip_prefix.getIp().to_string().c_str());
+    /* end by yoush */
 
     if (unicast_route_entry.destination.addr_family == SAI_IP_ADDR_FAMILY_IPV4)
     {
@@ -1463,6 +1497,22 @@ void IntfsOrch::removeIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_pref
 
     gFlowCounterRouteOrch->onRemoveMiscRouteEntry(vrf_id, IpPrefix(ip_prefix.getIp().to_string()));
 }
+
+/* add by yoush for ip2me route, add db for route check in 2026-01-17*/
+bool IntfsOrch::checkIp2MeRouteExsit(sai_object_id_t vrf_id, const IpPrefix &ip_prefix)
+{
+    auto it = m_ip2MeRouteTables.find(vrf_id);
+
+    if (it != m_ip2MeRouteTables.end()
+        && ip_prefix.isFullMask()
+        && it->second.find(ip_prefix.getIp()) != it->second.end())
+    {
+        return true;
+    }
+
+    return false;
+}
+/* end by yoush */
 
 void IntfsOrch::addDirectedBroadcast(const Port &port, const IpPrefix &ip_prefix)
 {
