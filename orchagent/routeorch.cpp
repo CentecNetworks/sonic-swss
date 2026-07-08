@@ -36,6 +36,7 @@ extern string gMySwitchType;
 /* Default maximum number of next hop groups */
 #define DEFAULT_NUMBER_OF_ECMP_GROUPS   128
 #define DEFAULT_MAX_ECMP_GROUP_SIZE     32
+#define DEFAULT_NUMBER_OF_PER_ECMP_GROUPS  128
 
 RouteOrch::RouteOrch(DBConnector *db, vector<table_name_with_pri_t> &tableNames, SwitchOrch *switchOrch, NeighOrch *neighOrch, IntfsOrch *intfsOrch, VRFOrch *vrfOrch, FgNhgOrch *fgNhgOrch, Srv6Orch *srv6Orch, swss::ZmqServer *zmqServer) :
         gRouteBulker(sai_route_api, gMaxBulkSize),
@@ -121,6 +122,19 @@ RouteOrch::RouteOrch(DBConnector *db, vector<table_name_with_pri_t> &tableNames,
                 SWSS_LOG_NOTICE("Set switch attribute ECMP member count to 128");
             }
         }
+    }
+
+    /* fetch the SAI_SWITCH_ATTR_ECMP_MEMBERS: ECMP number of members per group */
+    attr.id = SAI_SWITCH_ATTR_ECMP_MEMBERS;
+    status = sai_switch_api->get_switch_attribute(gSwitchId, 1, &attr);
+    if (status != SAI_STATUS_SUCCESS)
+    {
+        SWSS_LOG_WARN("Failed to get switch attribute max number of members per ECMP Group. rv:%d", status);
+        m_maxNextHopGroupMemberCount = DEFAULT_NUMBER_OF_PER_ECMP_GROUPS;
+    }
+    else
+    {
+        m_maxNextHopGroupMemberCount = attr.value.s32;
     }
 
     m_stateDb = shared_ptr<DBConnector>(new DBConnector("STATE_DB", 0));
@@ -1524,6 +1538,11 @@ bool RouteOrch::addNextHopGroup(const NextHopGroupKey &nexthops)
     if (!next_hop_ids.size())
     {
         SWSS_LOG_INFO("Skipping creation of nexthop group as none of nexthop are active");
+        return false;
+    }
+    if (next_hop_ids.size() > m_maxNextHopGroupMemberCount)
+    {
+        SWSS_LOG_INFO("Skipping creation of nexthop group as reaching maximum number of members per group");
         return false;
     }
     sai_attribute_t nhg_attr;

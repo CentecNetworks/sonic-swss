@@ -278,6 +278,7 @@ private:
 
     unsigned int m_nextHopGroupCount;
     unsigned int m_maxNextHopGroupCount;
+    unsigned int m_maxNextHopGroupMemberCount;
     bool m_resync;
 
     std::set<NextHopKey> v4_active_default_route_nhops;
