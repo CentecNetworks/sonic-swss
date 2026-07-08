@@ -39,6 +39,7 @@
 #define MATCH_TCP_FLAGS         "TCP_FLAGS"
 #define MATCH_IP_TYPE           "IP_TYPE"
 #define MATCH_DSCP              "DSCP"
+#define MATCH_ECN               "ECN"
 #define MATCH_L4_SRC_PORT_RANGE "L4_SRC_PORT_RANGE"
 #define MATCH_L4_DST_PORT_RANGE "L4_DST_PORT_RANGE"
 #define MATCH_TC                "TC"
