@@ -1107,7 +1107,7 @@ bool AclRule::validateAddMatch(string attr_name, string attr_value)
         {
             AclRangeConfig rangeConfig{};
             int n = 0;
-            if (sscanf(attr_value.c_str(), "%d-%d%n", &rangeConfig.min, &rangeConfig.max, &n) != 2 || n != attr_value.length())
+            if (sscanf(attr_value.c_str(), "%d-%d%n", &rangeConfig.min, &rangeConfig.max, &n) != 2 || static_cast<size_t>(n) != attr_value.length())
             {
                 SWSS_LOG_ERROR("Range parse error. Attribute: %s, value: %s", attr_name.c_str(), attr_value.c_str());
                 return false;
