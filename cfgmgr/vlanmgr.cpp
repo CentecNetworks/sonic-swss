@@ -348,6 +348,15 @@ void VlanMgr::doVlanTask(Consumer &consumer)
             continue;
         }
 
+        /* add by yoush for vlan id check in 2026-07-08 */
+        if (vlan_id < 1 || vlan_id > 4094)
+        {
+            SWSS_LOG_WARN("Vlan id is invalid, vlan = %d", vlan_id);
+            it = consumer.m_toSync.erase(it);
+            continue;
+        }
+        /* end by yoush */
+
         string vlan_alias, port_alias;
         string op = kfvOp(t);
 
