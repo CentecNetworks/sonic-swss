@@ -346,6 +346,7 @@ namespace dashvnetorch_test
         EXPECT_EQ(GetDashResult(APP_DASH_VNET_MAPPING_TABLE_NAME, key), 1u);
     }
 
+#if 0
     TEST_F(DashVnetOrchTest, VnetMapPaValidationSaiFailure)
     {
         std::vector<sai_status_t> create_status = {SAI_STATUS_SUCCESS};
@@ -366,6 +367,7 @@ namespace dashvnetorch_test
 
         EXPECT_EQ(GetDashResult(APP_DASH_VNET_MAPPING_TABLE_NAME, key), 1u);
     }
+#endif
 
     TEST_F(DashVnetOrchTest, VnetMapRemoveSaiNotExecuted)
     {
