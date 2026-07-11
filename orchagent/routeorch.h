@@ -238,6 +238,7 @@ private:
 
     unsigned int m_nextHopGroupCount;
     unsigned int m_maxNextHopGroupCount;
+    unsigned int m_maxNextHopGroupMemberCount;
     bool m_resync;
 
     shared_ptr<DBConnector> m_stateDb;
