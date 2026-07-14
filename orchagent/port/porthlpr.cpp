@@ -159,6 +159,27 @@ static inline std::uint32_t toUInt32(const std::string &hexStr)
     return toUInt<std::uint32_t>(hexStr);
 }
 
+template<typename T>
+static inline T toInt(const std::string &hexStr)
+{
+    if (hexStr.substr(0, 2) != "0x")
+    {
+        throw std::invalid_argument("Invalid argument: '" + hexStr + "'");
+    }
+
+    return to_int<T>(hexStr);
+}
+
+static inline std::int16_t toInt16(const std::string &hexStr)
+{
+    return toInt<std::int16_t>(hexStr);
+}
+
+static inline std::int32_t toInt32(const std::string &hexStr)
+{
+    return toInt<std::int32_t>(hexStr);
+}
+
 // Port helper --------------------------------------------------------------------------------------------------------
 
 bool PortHelper::fecToStr(std::string &str, sai_port_fec_mode_t value) const
@@ -717,7 +738,9 @@ bool PortHelper::parsePortSerdes(T &serdes, const std::string &field, const std:
     {
         for (const auto &cit : serdesList)
         {
-            serdes.value.push_back(toUInt32(cit));
+            /* modify by yoush in 2026-07-14
+            post1 may be -8 */
+            serdes.value.push_back(toInt32(cit));
         }
     }
     catch (const std::exception &e)
