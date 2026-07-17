@@ -36,6 +36,7 @@ extern string gMySwitchType;
 /* Default maximum number of next hop groups */
 #define DEFAULT_NUMBER_OF_ECMP_GROUPS   128
 #define DEFAULT_MAX_ECMP_GROUP_SIZE     32
+
 #define DEFAULT_NUMBER_OF_PER_ECMP_GROUPS  128
 
 RouteOrch::RouteOrch(DBConnector *db, vector<table_name_with_pri_t> &tableNames, SwitchOrch *switchOrch, NeighOrch *neighOrch, IntfsOrch *intfsOrch, VRFOrch *vrfOrch, FgNhgOrch *fgNhgOrch, Srv6Orch *srv6Orch, swss::ZmqServer *zmqServer) :
@@ -135,6 +136,7 @@ RouteOrch::RouteOrch(DBConnector *db, vector<table_name_with_pri_t> &tableNames,
     else
     {
         m_maxNextHopGroupMemberCount = attr.value.s32;
+        SWSS_LOG_NOTICE("Switch Type: %s, Max CMP number of members per group supported: %d", gMySwitchType.c_str(), attr.value.u32);
     }
 
     m_stateDb = shared_ptr<DBConnector>(new DBConnector("STATE_DB", 0));
@@ -1044,7 +1046,7 @@ void RouteOrch::doTask(ConsumerBase& consumer)
                         it = consumer.m_toSync.erase(it);
                     }
                     /* directly connected route to VRF interface which come from kernel */
-                    else if (!alsv[0].compare(0, strlen(VRF_PREFIX), VRF_PREFIX))
+                    else if (!alsv[0].compare(0, strlen(VRF_PREFIX), VRF_PREFIX) && (ctx.protocol != "bgp"))
                     {
                         it = consumer.m_toSync.erase(it);
                     }
@@ -1560,8 +1562,8 @@ bool RouteOrch::addNextHopGroup(const NextHopGroupKey &nexthops)
 
     if (status != SAI_STATUS_SUCCESS)
     {
-        SWSS_LOG_ERROR("Failed to create next hop group %s, rv:%d",
-                       nexthops.to_string().c_str(), status);
+        SWSS_LOG_ERROR("Failed to create next hop group %s, rv:%s",
+                       nexthops.to_string().c_str(), sai_serialize_status(status).c_str());
         task_process_status handle_status = handleSaiCreateStatus(SAI_API_NEXT_HOP_GROUP, status);
         if (handle_status != task_success)
         {
@@ -1624,8 +1626,8 @@ bool RouteOrch::addNextHopGroup(const NextHopGroupKey &nexthops)
         if (nhgm_id == SAI_NULL_OBJECT_ID)
         {
             // TODO: do we need to clean up?
-            SWSS_LOG_ERROR("Failed to create next hop group %" PRIx64 " member %" PRIx64 ": %d\n",
-                           next_hop_group_id, nhgm_ids[i], status);
+            SWSS_LOG_ERROR("Failed to create next hop group %" PRIx64 " member %" PRIx64 ", status: %s\n",
+                           next_hop_group_id, nhgm_ids[i], sai_serialize_status(status).c_str());
             return false;
         }
 
@@ -2051,22 +2053,37 @@ bool RouteOrch::addRoute(RouteBulkContext& ctx, const NextHopGroupKey &nextHops)
         const NextHopKey& nexthop = *nextHops.getNextHops().begin();
         if (nexthop.isIntfNextHop())
         {
-            if(gPortsOrch->isInbandPort(nexthop.alias))
+            if (gMySwitchType == "voq")
             {
-                //This routes is the static route added for the remote system neighbors
-                //We do not need this route in the ASIC since the static neighbor creation
-                //in ASIC adds the same full mask route (host route) in ASIC automatically
-                //So skip.
-                return true;
+                if(gPortsOrch->isInbandPort(nexthop.alias))
+                {
+                    //This routes is the static route added for the remote system neighbors
+                    //We do not need this route in the ASIC since the static neighbor creation
+                    //in ASIC adds the same full mask route (host route) in ASIC automatically
+                    //So skip.
+                    return true;
+                }
             }
 
             next_hop_id = m_intfsOrch->getRouterIntfsId(nexthop.alias);
             /* rif is not created yet */
             if (next_hop_id == SAI_NULL_OBJECT_ID)
             {
-                SWSS_LOG_INFO("Failed to get next hop %s for %s",
-                        nextHops.to_string().c_str(), ipPrefix.to_string().c_str());
-                return false;
+                /* BGP route leak generates VRF connected routes with nexthop 0.0.0.0 and ifname as a VRF name */
+                if ((ctx.protocol == "bgp"))
+                {
+                    SWSS_LOG_NOTICE("BGP VRF leaked route, create IP2ME route for vrf_id 0x%" PRIx64 ", prefix %s",
+                            vrf_id, ipPrefix.to_string().c_str());
+                    Port cpu_port;
+                    gPortsOrch->getCpuPort(cpu_port);
+                    next_hop_id = cpu_port.m_port_id;
+                }
+                else
+                {
+                    SWSS_LOG_INFO("Failed to get next hop %s for %s",
+                            nextHops.to_string().c_str(), ipPrefix.to_string().c_str());
+                    return false;
+                }
             }
         }
         else
@@ -2430,9 +2447,18 @@ bool RouteOrch::addRoutePost(const RouteBulkContext& ctx, const NextHopGroupKey 
             /* rif is not created yet */
             if (next_hop_id == SAI_NULL_OBJECT_ID)
             {
-                SWSS_LOG_INFO("Failed to get next hop %s for %s",
-                        nextHops.to_string().c_str(), ipPrefix.to_string().c_str());
-                return false;
+                /* BGP route leak generates VRF connected routes with nexthop 0.0.0.0 and ifname as a VRF name */
+                if ((ctx.protocol == "bgp"))
+                {
+                    SWSS_LOG_INFO("BGP VRF leaked route, create IP2ME route for vrf_id 0x%" PRIx64 ", prefix %s",
+                            vrf_id, ipPrefix.to_string().c_str());
+                }
+                else
+                {
+                    SWSS_LOG_INFO("Failed to get next hop %s for %s",
+                            nextHops.to_string().c_str(), ipPrefix.to_string().c_str());
+                    return false;
+                }
             }
         }
         else
