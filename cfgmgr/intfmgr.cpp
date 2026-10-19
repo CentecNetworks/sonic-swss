@@ -73,6 +73,27 @@ IntfMgr::IntfMgr(DBConnector *cfgDb, DBConnector *appDb, DBConnector *stateDb, c
     {
        mySwitchType = swtype;
     }
+
+    string ipv6_state;
+    if (cfgDeviceMetaDataTable.hget("localhost", "ipv6", ipv6_state))
+    {
+        stringstream cmd;
+        string res;
+        if (ipv6_state == "enable")
+        {
+            cmd << "sysctl -w net.ipv6.conf.all.disable_ipv6=0";
+        }
+        else
+        {
+            cmd << "sysctl -w net.ipv6.conf.all.disable_ipv6=1";
+        }
+        int ret = swss::exec(cmd.str(), res);
+        if (ret)
+        {
+            SWSS_LOG_ERROR("Command '%s' failed with rc %d",
+                        cmd.str().c_str(), ret);
+        }
+    }
 }
 
 void IntfMgr::setIntfIp(const string &alias, const string &opCmd,
