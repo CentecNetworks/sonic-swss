@@ -1227,7 +1227,8 @@ bool AclRule::validateAddMatch(string attr_name, string attr_value)
         else if ((attr_name == MATCH_L4_SRC_PORT_RANGE) || (attr_name == MATCH_L4_DST_PORT_RANGE))
         {
             AclRangeConfig rangeConfig{};
-            if (sscanf(attr_value.c_str(), "%d-%d", &rangeConfig.min, &rangeConfig.max) != 2)
+            int n = 0;
+            if (sscanf(attr_value.c_str(), "%d-%d%n", &rangeConfig.min, &rangeConfig.max, &n) != 2 || static_cast<size_t>(n) != attr_value.length())
             {
                 SWSS_LOG_ERROR("Range parse error. Attribute: %s, value: %s", attr_name.c_str(), attr_value.c_str());
                 return false;
