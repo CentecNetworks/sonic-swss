@@ -207,7 +207,7 @@ TeamdCtlDump TeamdCtlMgr::get_dump(const std::string & lag_name, bool to_retry)
                 {
                     if (m_lags_err_retry[lag_name] == MAX_RETRY)
                     {
-                        SWSS_LOG_ERROR("Can't get dump for LAG '%s'. Skipping", lag_name.c_str());
+                        SWSS_LOG_DEBUG("Can't get dump for LAG '%s'. Skipping", lag_name.c_str());
                         m_lags_err_retry.erase(lag_name);
                     }
                     else
@@ -223,13 +223,13 @@ TeamdCtlDump TeamdCtlMgr::get_dump(const std::string & lag_name, bool to_retry)
             else
             {
                 // No need to retry if the flag is not set.
-                SWSS_LOG_ERROR("Can't get dump for LAG '%s'. Skipping", lag_name.c_str());
+                SWSS_LOG_DEBUG("Can't get dump for LAG '%s'. Skipping", lag_name.c_str());
             }
         }
     }
     else
     {
-        SWSS_LOG_ERROR("Can't update state. LAG not found. LAG='%s'", lag_name.c_str());
+        SWSS_LOG_DEBUG("Can't update state. LAG not found. LAG='%s'", lag_name.c_str());
     }
 
     return res;
