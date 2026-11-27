@@ -49,6 +49,7 @@ const char state_db_key_delimiter  = '|';
 #define NPS_PLATFORM_SUBSTRING  "nephos"
 #define CISCO_8000_PLATFORM_SUBSTRING "cisco-8000"
 #define XS_PLATFORM_SUBSTRING   "xsight"
+#define CTC_PLATFORM_SUBSTRING  "centec"
 #define CLX_PLATFORM_SUBSTRING  "clounix"
 #define VPP_PLATFORM_SUBSTRING "vpp"
 
