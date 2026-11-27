@@ -31,6 +31,7 @@ struct IntfsEntry
 };
 
 typedef map<string, IntfsEntry> IntfsTable;
+typedef std::map<sai_object_id_t, std::set<IpAddress>> Ip2MeRouteTables;
 
 class IntfsOrch : public Orch
 {
@@ -65,6 +66,7 @@ public:
 
     void addIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_prefix);
     void removeIp2MeRoute(sai_object_id_t vrf_id, const IpPrefix &ip_prefix);
+    bool checkIp2MeRouteExsit(sai_object_id_t vrf_id, const IpPrefix &ip_prefix);
 
     const IntfsTable& getSyncdIntfses(void)
     {
@@ -116,6 +118,8 @@ private:
     unique_ptr<Table> m_tableVoqSystemInterfaceTable;
     void voqSyncAddIntf(string &alias);
     void voqSyncDelIntf(string &alias);
+    /* add by yoush for remoted route conflict with ip2me route in 2026-01-17*/
+    Ip2MeRouteTables m_ip2MeRouteTables;
 
     void addLinkLocalRouteToMeSag(sai_object_id_t vrf_id);
     void removeLinkLocalRouteToMeSag(sai_object_id_t vrf_id);
